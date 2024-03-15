@@ -31,7 +31,7 @@ yarn create vite
 # Select a varient : Typescript + SWC
 ```
 
-<picture><img alt="" src=".doc/images/terminal-yarn-create-vite.png" width="700px"></picture>
+<img alt="" src=".doc/images/terminal-yarn-create-vite.png" width="700px">
 
 ### 2. Yarn berry로 변경
 
@@ -47,7 +47,7 @@ yarn dlx @yarnpkg/sdks vscode
 # 명령어 입력 후 VSCode에서 "이 작업 영역에는 Typescript 버전이 포함..." 메세지 "허용"
 ```
 
-<picture><img alt="" src=".doc/images/vscode-allowed-typescript.png" width="400px"></picture>
+<img alt="" src=".doc/images/vscode-allowed-typescript.png" width="400px">
 
 ### 4. 자주 사용되는 Dependency 추가
 
