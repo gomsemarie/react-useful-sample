@@ -1,39 +1,79 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from "./pages";
-import CompExPage from "./pages/comp-ex";
+import {
+  Route,
+  RouterProvider,
+  createBrowserRouter,
+  createRoutesFromElements,
+} from "react-router-dom";
+import { SampleLayout } from "./layouts";
+import {
+  ComponentExPage,
+  DynamicSegmentExPage,
+  ErrorPage,
+  HomePage,
+  LoaderChildExPage,
+  LoaderParentExPage,
+  NotFoundPage,
+  OptionalSegmentExPage,
+  SplatsExPage,
+} from "./pages";
 
-function App() {
-  return (
-    // <BrowserRouter basename="/app">
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" errorElement={<ErrorBoundary />}>
-          <Route path="" element={<HomePage />} />
-          <Route path="comp-ex" element={<CompExPage />} />
-          // Path - dynamic segment
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <>
+      {/* Error Boundary 처리 */}
+      <Route errorElement={<ErrorPage />}>
+        <Route path="/" element={<HomePage />} />
+        {/* Dynamic Segment 예시 */}
+        <Route path="/ds-ex/:name" element={<DynamicSegmentExPage />} />
+        {/* Optional Segment 예시 */}
+        <Route
+          path="/os-ds-ex/:opt?/:req"
+          element={<OptionalSegmentExPage />}
+        />
+        <Route
+          path="/os-path-ex/opt?/:req"
+          element={<OptionalSegmentExPage />}
+        />
+        {/* Splats 예시 */}
+        <Route path="/splats-ex/*" element={<SplatsExPage />} />
+        {/* Layout Routes 예시 */}
+        <Route element={<SampleLayout />}>
+          <Route path="/layout-ex" element={<h2>Layout Example</h2>} />
+        </Route>
+        {/* Index 예시 */}
+        <Route path="/index-ex" element={<SampleLayout />}>
+          <Route index element={<h2>Index Example</h2>} />
+        </Route>
+        {/* Loader 예시 */}
+        <Route
+          id="parent-loader-ex"
+          path="/loader-ex"
+          element={<LoaderParentExPage />}
+          loader={async () => {
+            return "loader parent response";
+            // return fetch(`/fake/api/${params.id}.json`);
+          }}
+        >
           <Route
-            path="users/:id"
-            element={<HomePage />}
-            // 페이지 컴포넌트가 생성되기 전에 컴포넌트에 데이터를 전달한다
-            // 해당 페이지에서 useLoaderData()로 데이터를 가져올 수 있음
-            // 하위 라우트에서 useRouteLoaderData('id')로 상위 라우트의 데이터를 가져올 수 있음(<Router id={id} /> 필요)
-            // useLayoutEffect로 랜더링 이전에 데이터를 확인할 수 있음
+            path=":id"
+            element={<LoaderChildExPage />}
             loader={async ({ params }) => {
-              // return fetch(`/fake/api/${params.id}.json`);
-              console.log(params.id);
+              return `loader child response - ${params.id}`;
             }}
           />
-          // Splats - star segment(*)
-          <Route path="splats/*" element={<HomePage />} />
         </Route>
-      </Routes>
-    </BrowserRouter>
-  );
-}
+        {/* Component 구조 예시 */}
+        <Route path="/comp-ex" element={<ComponentExPage />} />
+        {/* Not Found Page 예시 */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </>
+  )
+);
 
-function ErrorBoundary() {
-  return <h1>Something went wrong.</h1>;
+function App() {
+  return <RouterProvider router={router} />;
 }
 
 export default App;

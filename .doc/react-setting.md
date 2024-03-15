@@ -54,4 +54,7 @@ yarn dlx @yarnpkg/sdks vscode
 ```bash
 # 라우팅 라이브러리
 yarn add react-router-dom
+
+# 상태관리 라이브러리
+yarn add recoil
 ```
