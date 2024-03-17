@@ -1,70 +1,117 @@
-// Input
+import { useState } from "react";
+
+/**
+ * 가장 기본적인 Input 컴포넌트 입니다.
+ * value로 string 또는 number를 받을 수 있는 인터페이스를 제공합니다.
+ * InputCore 컴포넌트를 사용하며 variation은 "default"로 설정됩니다.
+ */
 type InputProps = {
   value?: string | number;
-  regex?: RegExp;
+  onChange?: (value: string | number) => void;
 };
 
 function Input(props: InputProps) {
   return <InputCore {...props} variation="default" />;
 }
 
-// Input Core
+/**
+ * 모든 Input 컴포넌트 Variation에 대응이 가능한 Core 컴포넌트 입니다.
+ * 특정 Variation만 가지고 있는 속성은 optional하게, 모든 컴포넌트에 있는 속성은 required로 정의되어 있습니다(모든 곳에서 사용하는 속성이지만 하나라도 optional 하다면 optional로).
+ * Variation에 따라 내부에서 기능과 UI가 분기됩니다.
+ */
 type InputCoreProps<T> = {
-  variation: "default" | "number" | "email";
+  variation: "default" | "number" | "custom";
   value?: T;
-  regex?: RegExp;
-  only?: string;
+  onChange?: (value: T) => void;
+  unit?: string; // <Input.Number>에서만 사용할 수 있는 속성입니다.
   styleComponent?: (props: InputCoreProps<T>) => JSX.Element;
 };
-function InputCore<T extends string | number>(props: InputCoreProps<T>) {
-  const { variation, value } = props;
 
-  if (variation == "default") {
-    const val = value as InputProps["value"];
-    console.log(val);
-  } else if (variation == "number") {
-    const val = value as Input.InputNumberProps["value"];
-    console.log(val);
+function InputCore<T extends string | number>(props: InputCoreProps<T>) {
+  const { variation, unit, styleComponent: StyleComponent } = props;
+  const [state, setState, onChangeWrapped] = useSelectState<T>({
+    ...props,
+  });
+
+  // 내부에서 variation에 따라 분기되는 로직
+  if (variation === "default") {
+    const val = state as InputProps["value"];
+    console.log(val); // string | number
+  } else if (variation === "number") {
+    const val = state as Input.InputNumberProps["value"];
+    console.log(val); // number
   }
 
-  return <InputStyle<T> {...props} />;
-}
-
-function InputStyle<T>(props: InputCoreProps<T>) {
-  const { variation, styleComponent: StyleComponent } = props;
-  if (StyleComponent != undefined) {
+  // Custom Style 적용
+  if (StyleComponent !== undefined) {
     return <StyleComponent {...props} />;
   }
 
-  if (variation === "number") {
-    return <div>{`Number Style: ${variation}`}</div>;
-  }
-
-  return <div>{`Default Style: ${variation}`}</div>;
+  return (
+    <div data-component={`input-${variation}`}>
+      <input
+        type="text"
+        value={state ?? ""}
+        onChange={(e) => onChangeWrapped(e.target.value as T)}
+      />
+      {unit && <span>{unit}</span>}
+    </div>
+  );
 }
 
-// Variation
 namespace Input {
-  // Input.Number
+  /**
+   * Input.Number 컴포넌트는 InputCore 컴포넌트를 사용하며, value는 number를 받고 variation은 "number"로 설정됩니다.
+   * 다른 Input Variation과 다르게 unit 속성을 받을 수 있습니다.
+   */
   export type InputNumberProps = {
     value?: number;
-    regex: RegExp;
-    only?: string;
+    onChange?: (value: number) => void;
+    unit?: string;
   };
   export function Number(props: InputNumberProps) {
     return <InputCore {...props} variation="number" />;
   }
-  export function CustomNumber(props: InputNumberProps) {
+
+  /**
+   * Input.CustomStyleVariation 컴포넌트는 커스터마이징 된 UI를 가지는 컴포넌트 입니다.
+   */
+  export type CustomStyleVariationProps = {
+    value?: string;
+    onChange?: (value: string) => void;
+  };
+  export function CustomStyleVariation(props: CustomStyleVariationProps) {
     return (
-      <InputCore styleComponent={CustomStyle} {...props} variation="number" />
+      <InputCore {...props} variation="custom" styleComponent={CustomStyle} />
     );
   }
-  function CustomStyle<T>({ variation }: InputCoreProps<T>) {
-    return <div>{`Custom Number Style: ${variation}`}</div>;
+  function CustomStyle<T>({ value, variation }: InputCoreProps<T>) {
+    return (
+      <div
+        data-component={`input-${variation}`}
+      >{`Custom Style Input: ${value}`}</div>
+    );
   }
-  //   export function Email() {
-  //     return <InputCore value={''} variation="email" />;
-  //   }
+}
+
+/**
+ * value와 onChange를 받는 여부에 따라 state를 관리하는 커스텀 훅입니다.
+ */
+function useSelectState<T>({
+  value,
+  onChange,
+}: {
+  value?: T;
+  onChange?: (value: T) => void;
+}): [T | undefined, (value: T) => void, (value: T) => void] {
+  const [state, setState] = useState<T | undefined>();
+
+  const onChangeWrapped = (value: T) => {
+    onChange && onChange(value);
+    setState(value);
+  };
+
+  return [value !== undefined ? value : state, setState, onChangeWrapped];
 }
 
 export default Input;
