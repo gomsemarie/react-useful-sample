@@ -1,4 +1,4 @@
-# React + Typescript 실전 가이드
+# React + Typescript 트레이닝
 
 React, Typescript의 기본부터 시작하여 실제 프로젝트에서 관리하기 편하고 확장성이 좋은 개발을 위해 자주 사용되는 디자인 패턴과 꿀팁들을 알려드립니다.
 
